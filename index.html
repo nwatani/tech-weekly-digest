@@ -42,6 +42,7 @@
   --shadow-lg:     0 2px 6px rgba(15,23,42,.06), 0 24px 48px -28px rgba(15,23,42,.45);
   --radius:        18px;
   --radius-sm:     11px;
+  --ring:          0 0 0 3px rgba(43,108,246,.35);
 }
 [data-theme="dark"]{
   --bg:            #080c12;
@@ -67,6 +68,7 @@
   --shadow-sm:     0 1px 2px rgba(0,0,0,.5);
   --shadow:        0 1px 2px rgba(0,0,0,.5), 0 12px 34px -20px rgba(0,0,0,.9);
   --shadow-lg:     0 2px 8px rgba(0,0,0,.55), 0 28px 56px -30px rgba(0,0,0,1);
+  --ring:          0 0 0 3px rgba(91,155,255,.45);
 }
 
 /* ============================================================
@@ -196,10 +198,13 @@ img,svg{ display:block; max-width:100%; }
 }
 .header-actions{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
 
+/* Language switcher — order is locked (English | العربية) regardless of page direction */
 .segmented{
   display:inline-flex; padding:3px; gap:2px;
   background:var(--surface-3); border:1px solid var(--border);
   border-radius:999px;
+  direction:ltr;           /* keep button order stable in RTL pages */
+  unicode-bidi:isolate;
 }
 .seg-btn{
   appearance:none; border:0; background:transparent; cursor:pointer;
@@ -207,7 +212,9 @@ img,svg{ display:block; max-width:100%; }
   font-size:.85rem; font-weight:600; color:var(--text-muted);
   transition:background-color .18s ease, color .18s ease, box-shadow .18s ease;
   white-space:nowrap;
+  direction:ltr;
 }
+.seg-btn[lang="ar"]{ direction:rtl; }
 .seg-btn:hover{ color:var(--text); }
 .seg-btn[aria-pressed="true"]{
   background:var(--surface); color:var(--text);
@@ -516,6 +523,42 @@ html[dir="rtl"] .field select{
 .voice-status.is-warn{ color:var(--warn); font-weight:600; }
 .voice-status.is-ok{ color:var(--success); font-weight:600; }
 
+/* Toggle switch (Deep summary) */
+.field-switch{
+  display:inline-flex; align-items:center; gap:9px;
+  font-size:.8rem; font-weight:600; color:var(--text-muted);
+  cursor:pointer; user-select:none;
+  padding:4px 0;
+}
+.field-switch input[type="checkbox"]{
+  position:absolute; opacity:0; width:1px; height:1px; pointer-events:none;
+}
+.switch-track{
+  position:relative;
+  width:34px; height:19px; border-radius:99px;
+  background:var(--surface-3); border:1px solid var(--border);
+  transition:background-color .18s ease, border-color .18s ease;
+  flex:0 0 auto;
+  direction:ltr;              /* switch itself stays LTR regardless of page direction */
+}
+.switch-thumb{
+  position:absolute; top:1px; left:1px;
+  width:15px; height:15px; border-radius:50%;
+  background:var(--text-muted);
+  transition:transform .18s ease, background-color .18s ease;
+}
+.field-switch input[type="checkbox"]:checked + .switch-track{
+  background:var(--accent); border-color:transparent;
+}
+.field-switch input[type="checkbox"]:checked + .switch-track .switch-thumb{
+  transform:translateX(15px);
+  background:#ffffff;
+}
+.field-switch input[type="checkbox"]:focus-visible + .switch-track{
+  box-shadow:var(--ring);
+}
+.field-switch:hover{ color:var(--text); }
+
 /* ============================================================
    Cards
    ============================================================ */
@@ -704,7 +747,7 @@ html[dir="rtl"] .read-link:hover svg{ transform:scaleX(-1) translate(2px,-2px); 
     </div>
 
     <div class="header-actions">
-      <div class="segmented" role="group" aria-label="Language / اللغة" id="langGroup">
+      <div class="segmented" role="group" aria-label="Language / اللغة" id="langGroup" dir="ltr">
         <button type="button" class="seg-btn" id="btnLangEn" data-lang-btn="en" aria-pressed="true">English</button>
         <button type="button" class="seg-btn" id="btnLangAr" data-lang-btn="ar" aria-pressed="false" lang="ar">العربية</button>
       </div>
@@ -861,6 +904,11 @@ html[dir="rtl"] .read-link:hover svg{ transform:scaleX(-1) translate(2px,-2px); 
               <span data-i18n="voice">Voice</span>
               <select data-voice="en" data-i18n-aria="voiceAria" aria-label="Voice"></select>
             </label>
+            <label class="field-switch">
+              <input type="checkbox" data-deep="en" data-i18n-aria="deepAria" aria-label="Deep summary">
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+              <span data-i18n="deepSummary">Deep summary</span>
+            </label>
           </div>
         </div>
 
@@ -934,6 +982,11 @@ html[dir="rtl"] .read-link:hover svg{ transform:scaleX(-1) translate(2px,-2px); 
               <span data-i18n="voice">الصوت</span>
               <select data-voice="ar" data-i18n-aria="voiceAria" aria-label="الصوت"></select>
             </label>
+            <label class="field-switch">
+              <input type="checkbox" data-deep="ar" data-i18n-aria="deepAria" aria-label="ملخص موسّع">
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+              <span data-i18n="deepSummary">ملخص موسّع</span>
+            </label>
           </div>
         </div>
 
@@ -951,7 +1004,7 @@ html[dir="rtl"] .read-link:hover svg{ transform:scaleX(-1) translate(2px,-2px); 
   <div class="container">
     <p data-i18n="footerDisclaimer"></p>
     <p class="footer-meta">
-      <span id="footerVersion">v1.0.2</span>
+      <span id="footerVersion">v1.0.3</span>
       <span class="sep" aria-hidden="true">•</span>
       <span data-i18n="footerBuilt"></span>
       <span class="sep" aria-hidden="true">•</span>
@@ -965,19 +1018,21 @@ html[dir="rtl"] .read-link:hover svg{ transform:scaleX(-1) translate(2px,-2px); 
 /* ============================================================================
  * Tech Weekly Digest — single-file bilingual technology news dashboard
  * ----------------------------------------------------------------------------
- * v1.0.2 changes:
- *  1. Background playback: speech no longer stops when the tab is hidden.
- *  2. Skip button: jumps to the next story in the voice summary.
- *  3. Save button: downloads the weekly summary as a plain text file.
- *  4. Per-story utterances replace arbitrary text chunks, enabling accurate
- *     skip, progress display and a clean "end of summary" state.
+ * v1.0.3 changes:
+ *  1. Speech is now chunked into short sentence-sized utterances (~160 chars)
+ *     to work around Chrome/Safari silently truncating long utterances.
+ *  2. New "Deep summary" toggle (opt-in, per language): fetches the article
+ *     page, extracts the main text, runs an in-browser extractive summarizer,
+ *     caches the result, then reads that instead of the short RSS summary.
+ *  3. Language switcher order is locked: English | العربية — never flips when
+ *     the page direction changes.
  * ========================================================================== */
 
 /* ============================================================================
  * 1. CONFIGURATION
  * ========================================================================== */
 const CONFIG = {
-  version: "1.0.2",
+  version: "1.0.3",
 
   cacheTTL: 30 * 60 * 1000,
   requestTimeout: 15000,
@@ -990,8 +1045,17 @@ const CONFIG = {
   speechStories: 8,
   cacheWeeks: 4,
 
+  /* Utterance chunk size. Chrome truncates around 200–250 chars; 160 is safe. */
+  speechChunkSize: 160,
+
   /* Delay between speechSynthesis.cancel() and .speak() (Chrome race guard). */
   speechRestartDelay: 90,
+
+  /* Article fetch timeout (deep summary mode). */
+  articleTimeout: 14000,
+
+  /* Number of sentences kept by the extractive summarizer. */
+  deepSummarySentences: 7,
 
   /* Optional static digest. Empty string = use live feeds. */
   staticDigestUrl: "",
@@ -1100,6 +1164,13 @@ const I18N = {
     noVoiceAr: "لم يتم العثور على صوت عربي على هذا الجهاز.",
     speechUnsupported: "Speech synthesis is not supported in this browser.",
     speechEmpty: "There is no summary to read yet.",
+    deepSummary: "Deep summary",
+    deepAria: "Read a longer summary extracted from the full article",
+    deepHint: "Fetch the full article and read an extracted summary instead of the short feed description.",
+    preparing: "Preparing…",
+    preparingProgress: "Preparing deep summaries… {n} of {t}",
+    deepPartial: "Some articles could not be fetched — using feed summaries for those.",
+    deepAllFailed: "No articles could be fetched — using feed summaries.",
     source: "Source",
     readOriginal: "Read original article",
     footerDisclaimer: "This dashboard aggregates publicly available RSS and Atom feeds from third-party publications and displays only the metadata those feeds expose. Summaries shown here are shortened versions of feed-provided descriptions — always open the original article for full context, accuracy and editorial nuance. No content is invented or rewritten by this application.",
@@ -1177,6 +1248,13 @@ const I18N = {
     noVoiceAr: "لم يتم العثور على صوت عربي على هذا الجهاز.",
     speechUnsupported: "متصفحك لا يدعم تحويل النص إلى كلام.",
     speechEmpty: "لا يوجد ملخص لقراءته بعد.",
+    deepSummary: "ملخص موسّع",
+    deepAria: "قراءة ملخص أطول مستخرج من المقال الكامل",
+    deepHint: "جلب المقال الكامل وقراءة ملخص مستخرج بدلًا من الوصف المختصر.",
+    preparing: "جارٍ التحضير…",
+    preparingProgress: "جارٍ تحضير الملخصات الموسّعة… {n} من {t}",
+    deepPartial: "تعذّر جلب بعض المقالات — سيتم استخدام ملخصات الخلاصة لها.",
+    deepAllFailed: "تعذّر جلب المقالات — سيتم استخدام ملخصات الخلاصة.",
     source: "المصدر",
     readOriginal: "قراءة المقال الأصلي",
     footerDisclaimer: "تعرض هذه اللوحة خلاصات RSS وAtom المتاحة علنًا من منصات إخبارية خارجية، ولا تنشر سوى البيانات الوصفية التي توفرها تلك الخلاصات. الملخصات المعروضة هنا هي نسخ مختصرة من أوصاف الخلاصات — يُرجى دائمًا فتح المقال الأصلي للاطلاع على السياق الكامل والدقة التحريرية. لا يقوم هذا التطبيق باختلاق أي محتوى أو إعادة صياغته.",
@@ -1375,6 +1453,8 @@ function t(key, vars) {
  * ========================================================================== */
 const PREFS_KEY = "twd.prefs.v1";
 const CACHE_KEY = "twd.cache.v1";
+const DEEP_KEY  = "twd.deep.v1";
+const DEEP_TTL  = 7 * 24 * 3600 * 1000;
 
 const storedPrefs = store.get(PREFS_KEY, {}) || {};
 
@@ -1385,7 +1465,9 @@ const prefs = {
         ? storedPrefs.rate : 1,
   voiceEn: storedPrefs.voiceEn || null,
   voiceAr: storedPrefs.voiceAr || null,
-  weekOffset: typeof storedPrefs.weekOffset === "number" ? storedPrefs.weekOffset : 0
+  weekOffset: typeof storedPrefs.weekOffset === "number" ? storedPrefs.weekOffset : 0,
+  deepEn: !!storedPrefs.deepEn,
+  deepAr: !!storedPrefs.deepAr
 };
 
 function savePrefs() {
@@ -1395,7 +1477,9 @@ function savePrefs() {
     rate: prefs.rate,
     voiceEn: prefs.voiceEn,
     voiceAr: prefs.voiceAr,
-    weekOffset: prefs.weekOffset
+    weekOffset: prefs.weekOffset,
+    deepEn: prefs.deepEn,
+    deepAr: prefs.deepAr
   });
 }
 
@@ -1754,22 +1838,275 @@ function hydrateArticles(list) {
   }));
 }
 
+/* ----------------------------------------------------------------------------
+ * Deep summary cache (per article ID)
+ * -------------------------------------------------------------------------- */
+function readDeepCache(id) {
+  const cache = store.get(DEEP_KEY, {}) || {};
+  const entry = cache[id];
+  if (!entry || !entry.ts) return null;
+  if ((Date.now() - entry.ts) > DEEP_TTL) return null;
+  return entry.text || null;
+}
+
+function writeDeepCache(id, text) {
+  const cache = store.get(DEEP_KEY, {}) || {};
+  cache[id] = { text: text, ts: Date.now() };
+  const keys = Object.keys(cache);
+  if (keys.length > 120) {
+    keys.sort((a, b) => (cache[a].ts || 0) - (cache[b].ts || 0));
+    keys.slice(0, keys.length - 100).forEach(k => { delete cache[k]; });
+  }
+  store.set(DEEP_KEY, cache);
+}
+
 /* ============================================================================
- * 9. SPEECH SYNTHESIS
+ * 9. TEXT CHUNKING  (fix for Chrome/Safari long-utterance truncation)
+ * ========================================================================== */
+/** Split a long sentence on commas / semicolons, then fall back to spaces. */
+function splitLongSentence(sentence, limit) {
+  const parts = sentence.split(/(?<=[,;،;])\s+/);
+  const out = [];
+  let current = "";
+  parts.forEach(p => {
+    if ((current + " " + p).trim().length > limit && current) {
+      out.push(current.trim());
+      current = p;
+    } else {
+      current = current ? current + " " + p : p;
+    }
+  });
+  if (current.trim()) out.push(current.trim());
+
+  const final = [];
+  out.forEach(p => {
+    if (p.length <= limit) { final.push(p); return; }
+    let buf = "";
+    p.split(/\s+/).forEach(word => {
+      if ((buf + " " + word).trim().length > limit && buf) {
+        final.push(buf.trim());
+        buf = word;
+      } else {
+        buf = buf ? buf + " " + word : word;
+      }
+    });
+    if (buf.trim()) final.push(buf.trim());
+  });
+  return final;
+}
+
+/**
+ * Split text into sentence-bounded chunks no longer than `max` characters.
+ * Handles Latin and Arabic sentence terminators.
+ */
+function chunkIntoSentences(text, max) {
+  const limit = max || CONFIG.speechChunkSize;
+  if (!text) return [];
+
+  const sentences = text
+    .split(/(?<=[.!?؟…])\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const chunks = [];
+  let current = "";
+
+  sentences.forEach(sentence => {
+    if (sentence.length > limit) {
+      if (current) { chunks.push(current); current = ""; }
+      const subs = splitLongSentence(sentence, limit);
+      subs.forEach(sub => {
+        if ((current + " " + sub).trim().length > limit && current) {
+          chunks.push(current.trim());
+          current = sub;
+        } else {
+          current = current ? current + " " + sub : sub;
+        }
+      });
+      return;
+    }
+    if ((current + " " + sentence).trim().length > limit && current) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current = current ? current + " " + sentence : sentence;
+    }
+  });
+
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.filter(Boolean);
+}
+
+/* ============================================================================
+ * 10. ARTICLE EXTRACTION + EXTRACTIVE SUMMARIZER (deep summary mode)
+ * ========================================================================== */
+const JUNK_SELECTORS = [
+  "script","style","noscript","iframe","svg","form","nav","header","footer","aside","button",
+  "[role='navigation']","[role='banner']","[role='complementary']",
+  ".ad",".ads",".advert",".advertisement","[class*='advert']",
+  "[class*='cookie']","[class*='consent']","[class*='newsletter']",
+  "[class*='subscribe']","[class*='paywall']","[class*='social']",
+  "[class*='share']","[class*='comment']","[class*='related']",
+  "[class*='recommend']","[class*='promo']","[class*='sidebar']",
+  "[class*='byline']","[class*='caption']","[class*='tags']",
+  "[id*='cookie']","[id*='newsletter']","[id*='comment']"
+];
+
+const CONTENT_SELECTORS = [
+  "article", "[role='main']", "main",
+  ".article-body", ".article-content", ".post-content", ".entry-content",
+  ".story-body", ".story-content", ".post-body", ".content-body",
+  "#article-body", "#content", ".caas-body", ".zn-body__paragraph"
+];
+
+function extractArticleText(html) {
+  if (!html || html.length < 400) return "";
+  let doc;
+  try {
+    doc = new DOMParser().parseFromString(html, "text/html");
+  } catch (e) { return ""; }
+
+  // Remove obvious junk
+  JUNK_SELECTORS.forEach(sel => {
+    try { doc.querySelectorAll(sel).forEach(el => el.remove()); } catch (e) {}
+  });
+
+  // Find main content root
+  let root = null;
+  for (let i = 0; i < CONTENT_SELECTORS.length; i++) {
+    try {
+      const el = doc.querySelector(CONTENT_SELECTORS[i]);
+      if (el && (el.textContent || "").trim().length > 300) { root = el; break; }
+    } catch (e) {}
+  }
+  if (!root) root = doc.body;
+  if (!root) return "";
+
+  // Prefer paragraph text
+  const paragraphs = Array.prototype.slice.call(root.querySelectorAll("p"))
+    .map(p => (p.textContent || "").replace(/\s+/g, " ").trim())
+    .filter(t => t.length > 60 && t.length < 2200);
+
+  let combined = "";
+  if (paragraphs.length >= 2) {
+    combined = paragraphs.join("\n\n");
+  } else {
+    combined = (root.textContent || "").replace(/\s+/g, " ").trim();
+  }
+
+  // Quality gate: reject page-shell boilerplate.
+  const lowered = combined.toLowerCase();
+  const junkHits = ["javascript is disabled","enable javascript","subscribe to continue",
+                    "sign in to continue","cookies to continue","accept cookies",
+                    "هذا المحتوى غير متاح","يرجى تفعيل جافا سكريبت"]
+                    .reduce((acc, s) => acc + (lowered.indexOf(s) !== -1 ? 1 : 0), 0);
+  if (junkHits >= 2) return "";
+  if (combined.length < 400) return "";
+
+  return combined;
+}
+
+function summarizeExtractive(text, lang, maxSentences) {
+  if (!text) return "";
+  const limit = maxSentences || CONFIG.deepSummarySentences;
+
+  const sentences = text
+    .split(/(?<=[.!?؟…])\s+/)
+    .map(s => s.replace(/\s+/g, " ").trim())
+    .filter(s => s.length > 40 && s.length < 500);
+
+  if (!sentences.length) return "";
+  if (sentences.length <= limit) return sentences.join(" ");
+
+  const stop = STOPWORDS[lang] || STOPWORDS.en;
+
+  // Word frequency table (excluding stopwords).
+  const freq = Object.create(null);
+  sentences.forEach(s => {
+    const words = s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/);
+    words.forEach(w => {
+      if (w.length < 3) return;
+      if (stop.indexOf(w) !== -1) return;
+      freq[w] = (freq[w] || 0) + 1;
+    });
+  });
+
+  // Score each sentence: normalized word frequency + positional bonus.
+  const scored = sentences.map((s, i) => {
+    const words = s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/);
+    let score = 0;
+    let counted = 0;
+    words.forEach(w => {
+      if (w.length < 3 || stop.indexOf(w) !== -1) return;
+      score += freq[w] || 0;
+      counted++;
+    });
+    if (counted > 0) score /= counted;
+    if (i < 3) score *= 1.45;                                 // strong lead bonus
+    else if (i >= sentences.length - 2) score *= 1.15;        // closing bonus
+    else if (i < 6) score *= 1.15;
+    return { i, s, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const picked = scored.slice(0, limit).sort((a, b) => a.i - b.i);
+  return picked.map(p => p.s).join(" ");
+}
+
+/** Fetch + extract + summarize one article. Returns "" on any failure. */
+async function fetchArticleSummary(story, lang) {
+  const cached = readDeepCache(story.id);
+  if (cached) return cached;
+
+  for (let i = 0; i < CONFIG.proxies.length; i++) {
+    const proxy = CONFIG.proxies[i];
+    if (proxy.type === "rss2json") continue;   // not suited for full-page fetching
+
+    let target;
+    try { target = proxy.build(story.link); } catch (e) { continue; }
+
+    try {
+      const res = await fetchWithTimeout(target, CONFIG.articleTimeout);
+      if (!res.ok) continue;
+      const body = await res.text();
+      if (!body || body.length < 500) continue;
+
+      let html = body;
+      if (proxy.type === "allorigins") {
+        try {
+          const j = JSON.parse(body);
+          html = j && j.contents ? j.contents : "";
+        } catch (e) { continue; }
+      }
+      if (!html || html.length < 500) continue;
+
+      const extracted = extractArticleText(html);
+      if (!extracted) continue;
+
+      const summary = summarizeExtractive(extracted, lang, CONFIG.deepSummarySentences);
+      if (summary && summary.length >= 150) {
+        writeDeepCache(story.id, summary);
+        return summary;
+      }
+    } catch (e) {
+      // try next proxy
+    }
+  }
+  return "";
+}
+
+/* ============================================================================
+ * 11. SPEECH SYNTHESIS
  * ----------------------------------------------------------------------------
- * Design:
- *  - Each story is spoken as its own SpeechSynthesisUtterance. This makes
- *    "skip to next story", "story X of Y" progress and "summary complete"
- *    possible without guessing sentence boundaries.
- *  - speech[lang].token is bumped every time we start or cancel speech so
- *    that stale onend/onerror callbacks are ignored.
- *  - No visibilitychange handler cancels speech — background playback is
- *    therefore allowed. Note: some browsers may throttle background tabs;
- *    that is a browser-level policy we cannot override from JS.
+ * A "plan" is a flat list of beats:
+ *   { storyIndex, chunkIndex, isStoryEnd, text, story }
+ * Each beat is one short utterance. This is the core fix for the truncation
+ * bug — Chrome handles many short utterances reliably but silently truncates
+ * long ones.
  * ========================================================================== */
 const speech = {
-  en: { state: "idle", token: 0, currentStory: 0, totalStories: 0 },
-  ar: { state: "idle", token: 0, currentStory: 0, totalStories: 0 }
+  en: { state: "idle", token: 0, currentBeat: 0, plan: null, preparing: false },
+  ar: { state: "idle", token: 0, currentBeat: 0, plan: null, preparing: false }
 };
 
 let availableVoices = [];
@@ -1835,35 +2172,8 @@ function storySlice(lang) {
   return (state.data[lang] || []).slice(0, CONFIG.speechStories);
 }
 
-/** Build one utterance string per story, with the intro folded into story 1. */
-function getSpeechItems(lang) {
-  const stories = storySlice(lang);
-  if (!stories.length) return [];
-
-  const start = addDays(weekStart(new Date()), state.weekOffset * 7);
-  const end = addDays(start, 7);
-  const range = formatRange(start, end, lang);
-  const items = [];
-
-  stories.forEach((story, i) => {
-    let text = "";
-    if (i === 0) {
-      text += lang === "ar"
-        ? "ملخص أخبار التقنية للأسبوع من " + range + ". "
-        : "Weekly technology digest for " + range + ". ";
-    }
-    if (lang === "ar") {
-      text += "الخبر " + (i + 1) + " من " + stories.length + ". " + story.title + ". ";
-      if (story.summary) text += story.summary + " ";
-      text += "المصدر: " + story.sourceName + ".";
-    } else {
-      text += "Story " + (i + 1) + " of " + stories.length + ". " + story.title + ". ";
-      if (story.summary) text += story.summary + " ";
-      text += "Source: " + story.sourceName + ".";
-    }
-    items.push(text);
-  });
-  return items;
+function deepEnabled(lang) {
+  return lang === "en" ? !!prefs.deepEn : !!prefs.deepAr;
 }
 
 function setVoiceStatus(lang, message, kind) {
@@ -1874,45 +2184,108 @@ function setVoiceStatus(lang, message, kind) {
   el.classList.toggle("is-ok", kind === "ok");
 }
 
+function composeStoryText(story, index, total, lang, summaryOverride) {
+  const summary = summaryOverride !== undefined ? summaryOverride : story.summary;
+  let text = "";
+
+  if (index === 0) {
+    const start = addDays(weekStart(new Date()), state.weekOffset * 7);
+    const end = addDays(start, 7);
+    const range = formatRange(start, end, lang);
+    text += lang === "ar"
+      ? "ملخص أخبار التقنية للأسبوع من " + range + ". "
+      : "Weekly technology digest for " + range + ". ";
+  }
+
+  if (lang === "ar") {
+    text += "الخبر " + (index + 1) + " من " + total + ". " + story.title + ". ";
+    if (summary) text += summary + " ";
+    text += "المصدر: " + story.sourceName + ".";
+  } else {
+    text += "Story " + (index + 1) + " of " + total + ". " + story.title + ". ";
+    if (summary) text += summary + " ";
+    text += "Source: " + story.sourceName + ".";
+  }
+  return text;
+}
+
 /**
- * Start (or restart) playback from a specific story index.
- * Cancels any current speech; the token guard prevents stale callbacks
- * from advancing the queue after a skip/stop.
+ * Build a speech plan from the current stories.
+ * `summaries` (optional) — per-story overrides used in deep summary mode.
  */
-function playFrom(lang, index) {
-  if (!state.speechSupported) {
-    setVoiceStatus(lang, t("speechUnsupported"), "warn");
-    return;
-  }
-  const items = getSpeechItems(lang);
+function buildPlan(lang, summaries) {
+  const stories = storySlice(lang);
+  if (!stories.length) return null;
+
+  const beats = [];
+  stories.forEach((story, si) => {
+    const override = summaries && summaries[si] !== undefined ? summaries[si] : undefined;
+    const fullText = composeStoryText(story, si, stories.length, lang, override);
+    const chunks = chunkIntoSentences(fullText, CONFIG.speechChunkSize);
+    chunks.forEach((chunk, ci) => {
+      beats.push({
+        storyIndex: si,
+        chunkIndex: ci,
+        isStoryEnd: ci === chunks.length - 1,
+        text: chunk,
+        story: story
+      });
+    });
+  });
+
+  return { beats: beats, storyCount: stories.length, deep: !!(summaries) };
+}
+
+/** Sequentially fetch + cache deep summaries. Cancellable via token. */
+async function prepareDeepSummaries(lang, token) {
+  const stories = storySlice(lang);
+  if (!stories.length) return null;
+
   const sp = speech[lang];
+  const summaries = new Array(stories.length).fill(null);
+  let failed = 0;
 
-  if (!items.length) {
-    setVoiceStatus(lang, t("speechEmpty"), "warn");
-    return;
+  for (let i = 0; i < stories.length; i++) {
+    if (sp.token !== token) return null;   // cancelled
+    setVoiceStatus(lang, t("preparingProgress", { n: i + 1, t: stories.length }));
+    try {
+      const s = await fetchArticleSummary(stories[i], lang);
+      if (sp.token !== token) return null;
+      summaries[i] = s || stories[i].summary || "";
+      if (!s) failed++;
+    } catch (e) {
+      summaries[i] = stories[i].summary || "";
+      failed++;
+    }
   }
 
-  // Invalidate any in-flight callbacks before we cancel.
-  const token = ++sp.token;
-  try { window.speechSynthesis.cancel(); } catch (e) {}
+  if (sp.token !== token) return null;
+  return { summaries: summaries, failed: failed, total: stories.length };
+}
 
-  sp.totalStories = items.length;
+/** Play a single beat. onend recursively plays the next one. */
+function playFromBeat(lang, beatIndex) {
+  const sp = speech[lang];
+  if (!sp.plan) return;
+  const plan = sp.plan;
 
-  if (index >= items.length) {
+  if (beatIndex >= plan.beats.length) {
     sp.state = "idle";
-    sp.currentStory = items.length;
+    sp.currentBeat = plan.beats.length;
     setVoiceStatus(lang, t("summaryComplete"), "ok");
     updateSpeechUI();
+    highlightCurrentStory();
     return;
   }
-  if (index < 0) index = 0;
+  if (beatIndex < 0) beatIndex = 0;
 
-  sp.currentStory = index;
+  sp.currentBeat = beatIndex;
   sp.state = "playing";
-  setVoiceStatus(lang, "");
-  updateSpeechUI();
 
-  const utter = new SpeechSynthesisUtterance(items[index]);
+  const token = sp.token;
+  const beat = plan.beats[beatIndex];
+
+  const utter = new SpeechSynthesisUtterance(beat.text);
   utter.lang = lang === "ar" ? "ar-SA" : "en-US";
   const voice = pickVoice(lang);
   if (voice) utter.voice = voice;
@@ -1922,8 +2295,15 @@ function playFrom(lang, index) {
 
   utter.onend = () => {
     if (sp.token !== token) return;
-    // Advance to the next story.
-    playFrom(lang, index + 1);
+    if (beatIndex + 1 < plan.beats.length) {
+      playFromBeat(lang, beatIndex + 1);
+    } else {
+      sp.state = "idle";
+      sp.currentBeat = plan.beats.length;
+      setVoiceStatus(lang, t("summaryComplete"), "ok");
+      updateSpeechUI();
+      highlightCurrentStory();
+    }
   };
   utter.onerror = (event) => {
     if (sp.token !== token) return;
@@ -1934,26 +2314,29 @@ function playFrom(lang, index) {
     updateSpeechUI();
   };
 
-  // Chrome needs a small tick after cancel() before speak() will succeed.
-  setTimeout(() => {
-    if (sp.token !== token) return;
-    try { window.speechSynthesis.speak(utter); }
-    catch (e) {
-      if (sp.token !== token) return;
-      sp.state = "idle";
-      setVoiceStatus(lang, "Speech error: " + (e.message || "unknown"), "warn");
-      updateSpeechUI();
-    }
-  }, CONFIG.speechRestartDelay);
+  // Clear any "preparing"/"partial" status on the first beat of a story.
+  if (beat.chunkIndex === 0) setVoiceStatus(lang, "");
+
+  updateSpeechUI();
+  highlightCurrentStory();
+
+  try { window.speechSynthesis.speak(utter); }
+  catch (e) {
+    sp.state = "idle";
+    setVoiceStatus(lang, "Speech error: " + (e.message || "unknown"), "warn");
+    updateSpeechUI();
+  }
 }
 
-function handlePlay(lang) {
+async function handlePlay(lang) {
   if (!state.speechSupported) {
     setVoiceStatus(lang, t("speechUnsupported"), "warn");
     return;
   }
   const sp = speech[lang];
-  if (sp.state === "playing") return;         // already playing
+
+  if (sp.preparing) return;
+  if (sp.state === "playing") return;
   if (sp.state === "paused") {
     try { window.speechSynthesis.resume(); } catch (e) {}
     sp.state = "playing";
@@ -1961,7 +2344,54 @@ function handlePlay(lang) {
     updateSpeechUI();
     return;
   }
-  playFrom(lang, 0);
+
+  if (!storySlice(lang).length) {
+    setVoiceStatus(lang, t("speechEmpty"), "warn");
+    return;
+  }
+
+  // New session — invalidate any in-flight callbacks.
+  const token = ++sp.token;
+  try { window.speechSynthesis.cancel(); } catch (e) {}
+
+  if (deepEnabled(lang)) {
+    sp.preparing = true;
+    sp.plan = null;
+    updateSpeechUI();
+
+    let result = null;
+    try {
+      result = await prepareDeepSummaries(lang, token);
+    } catch (e) {
+      result = null;
+    }
+    sp.preparing = false;
+    if (sp.token !== token) return;
+
+    if (result && result.failed === 0) {
+      sp.plan = buildPlan(lang, result.summaries);
+    } else if (result && result.failed < result.total) {
+      sp.plan = buildPlan(lang, result.summaries);
+      setVoiceStatus(lang, t("deepPartial"), "warn");
+    } else if (result) {
+      // All failed — fall back to plain plan.
+      sp.plan = buildPlan(lang, null);
+      setVoiceStatus(lang, t("deepAllFailed"), "warn");
+    } else {
+      sp.plan = buildPlan(lang, null);
+    }
+  } else {
+    sp.plan = buildPlan(lang, null);
+  }
+
+  if (!sp.plan || !sp.plan.beats.length) {
+    sp.state = "idle";
+    setVoiceStatus(lang, t("speechEmpty"), "warn");
+    updateSpeechUI();
+    return;
+  }
+
+  playFromBeat(lang, 0);
 }
 
 function pauseSpeech(lang) {
@@ -1976,20 +2406,36 @@ function pauseSpeech(lang) {
 function skipToNext(lang) {
   if (!state.speechSupported) return;
   const sp = speech[lang];
-  if (sp.state === "idle") return;
-  const items = getSpeechItems(lang);
-  const next = sp.currentStory + 1;
-  if (next >= items.length) {
-    // Already at the last story — complete.
-    sp.token++;
-    try { window.speechSynthesis.cancel(); } catch (e) {}
+  if (sp.state === "idle" || !sp.plan) return;
+
+  const currentBeat = sp.plan.beats[sp.currentBeat];
+  if (!currentBeat) return;
+  const currentStory = currentBeat.storyIndex;
+
+  // Find the first beat belonging to a later story.
+  let nextIndex = -1;
+  for (let i = sp.currentBeat + 1; i < sp.plan.beats.length; i++) {
+    if (sp.plan.beats[i].storyIndex > currentStory) { nextIndex = i; break; }
+  }
+
+  // Bump token so pending onend/onerror callbacks are ignored.
+  sp.token++;
+  try { window.speechSynthesis.cancel(); } catch (e) {}
+
+  if (nextIndex === -1) {
     sp.state = "idle";
-    sp.currentStory = items.length;
+    sp.currentBeat = sp.plan.beats.length;
     setVoiceStatus(lang, t("summaryComplete"), "ok");
     updateSpeechUI();
+    highlightCurrentStory();
     return;
   }
-  playFrom(lang, next);
+
+  sp.state = "playing";
+  // Chrome needs a small gap after cancel() before the next speak() will work.
+  setTimeout(() => {
+    playFromBeat(lang, nextIndex);
+  }, CONFIG.speechRestartDelay);
 }
 
 function stopSpeech(lang) {
@@ -1997,10 +2443,13 @@ function stopSpeech(lang) {
   const sp = speech[lang];
   sp.token++;
   sp.state = "idle";
-  sp.currentStory = 0;
+  sp.currentBeat = 0;
+  sp.plan = null;
+  sp.preparing = false;
   try { window.speechSynthesis.cancel(); } catch (e) {}
   setVoiceStatus(lang, "");
   updateSpeechUI();
+  highlightCurrentStory();
 }
 
 function stopAllSpeech() { ["en", "ar"].forEach(stopSpeech); }
@@ -2025,11 +2474,12 @@ function updateSpeechUI() {
     if (live) live.hidden = sp.state !== "playing";
 
     if (progress) {
-      if (active && sp.totalStories > 0 && sp.currentStory < sp.totalStories) {
+      if (active && sp.plan && sp.currentBeat < sp.plan.beats.length) {
+        const beat = sp.plan.beats[sp.currentBeat];
         progress.hidden = false;
         progress.textContent = t("progressLabel", {
-          n: sp.currentStory + 1,
-          t: sp.totalStories
+          n: beat.storyIndex + 1,
+          t: sp.plan.storyCount
         });
       } else {
         progress.hidden = true;
@@ -2039,23 +2489,28 @@ function updateSpeechUI() {
 
     if (playBtn) {
       const label = playBtn.querySelector('[data-label="play"]');
-      if (label) label.textContent = sp.state === "paused" ? t("resume") : t("play");
-      playBtn.disabled = !supported || !hasContent || sp.state === "playing";
+      if (sp.preparing) {
+        if (label) label.textContent = t("preparing");
+        playBtn.disabled = true;
+      } else {
+        if (label) label.textContent = sp.state === "paused" ? t("resume") : t("play");
+        playBtn.disabled = !supported || !hasContent || sp.state === "playing";
+      }
       playBtn.setAttribute("aria-label", sp.state === "paused" ? t("resume") : t("play"));
     }
     if (pauseBtn) {
-      pauseBtn.disabled = !supported || sp.state !== "playing";
+      pauseBtn.disabled = !supported || sp.state !== "playing" || sp.preparing;
       const label = pauseBtn.querySelector('[data-label="pause"]');
       if (label) label.textContent = t("pause");
     }
     if (skipBtn) {
-      skipBtn.disabled = !supported || !active;
+      skipBtn.disabled = !supported || !active || sp.preparing;
       skipBtn.setAttribute("aria-label", t("skipAria"));
       const label = skipBtn.querySelector('[data-label="skip"]');
       if (label) label.textContent = t("skip");
     }
     if (stopBtn) {
-      stopBtn.disabled = !supported || sp.state === "idle";
+      stopBtn.disabled = !supported || (sp.state === "idle" && !sp.preparing);
       const label = stopBtn.querySelector('[data-label="stop"]');
       if (label) label.textContent = t("stop");
     }
@@ -2071,7 +2526,7 @@ function updateSpeechUI() {
 }
 
 /* ============================================================================
- * 10. SUMMARY EXPORT
+ * 12. SUMMARY EXPORT
  * ========================================================================== */
 function buildSummaryText(lang) {
   const items = state.data[lang] || [];
@@ -2120,8 +2575,6 @@ function saveSummary(lang) {
     return;
   }
   try {
-    // Prepend a BOM so Windows Notepad and Excel open UTF-8 correctly,
-    // especially for Arabic text.
     const blob = new Blob(["\uFEFF" + text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const start = addDays(weekStart(new Date()), state.weekOffset * 7);
@@ -2144,7 +2597,7 @@ function saveSummary(lang) {
 }
 
 /* ============================================================================
- * 11. RENDERING
+ * 13. RENDERING
  * ========================================================================== */
 function applyTheme() {
   document.documentElement.setAttribute("data-theme", state.theme);
@@ -2270,18 +2723,17 @@ function articleCard(article, lang) {
 }
 
 function highlightCurrentStory() {
-  const map = { en: 0, ar: 0 };
   ["en", "ar"].forEach(lang => {
     const sp = speech[lang];
-    const list = storySlice(lang);
-    const activeId = (sp.state !== "idle" && sp.currentStory < list.length)
-      ? list[sp.currentStory].id : null;
+    let activeId = null;
+    if (sp.state !== "idle" && sp.plan && sp.currentBeat < sp.plan.beats.length) {
+      activeId = sp.plan.beats[sp.currentBeat].story.id;
+    }
     const container = document.getElementById(lang === "en" ? "cardsEn" : "cardsAr");
     if (!container) return;
     $$(".card", container).forEach(card => {
       card.classList.toggle("is-current", card.dataset.articleId === activeId);
     });
-    map[lang] = activeId;
   });
 }
 
@@ -2472,7 +2924,7 @@ function renderAll() {
 }
 
 /* ============================================================================
- * 12. DATA LOADING
+ * 14. DATA LOADING
  * ========================================================================== */
 function currentWindow() {
   const start = addDays(weekStart(new Date()), state.weekOffset * 7);
@@ -2606,7 +3058,7 @@ async function selectWeek(offset, options) {
 }
 
 /* ============================================================================
- * 13. EVENTS
+ * 15. EVENTS
  * ========================================================================== */
 function bindEvents() {
   $$("[data-lang-btn]").forEach(btn => {
@@ -2669,6 +3121,7 @@ function bindEvents() {
     const saveBtn = document.querySelector('[data-speak-save="' + lang + '"]');
     const rateInput = document.querySelector('[data-rate="' + lang + '"]');
     const voiceSelect = document.querySelector('[data-voice="' + lang + '"]');
+    const deepToggle = document.querySelector('[data-deep="' + lang + '"]');
 
     if (playBtn) playBtn.addEventListener("click", () => handlePlay(lang));
     if (pauseBtn) pauseBtn.addEventListener("click", () => pauseSpeech(lang));
@@ -2697,6 +3150,18 @@ function bindEvents() {
         savePrefs();
       });
     }
+
+    if (deepToggle) {
+      deepToggle.checked = deepEnabled(lang);
+      deepToggle.addEventListener("change", () => {
+        if (lang === "en") prefs.deepEn = deepToggle.checked;
+        else prefs.deepAr = deepToggle.checked;
+        savePrefs();
+        // Reflect the change in the button state if a session is running.
+        stopSpeech(lang);
+        setVoiceStatus(lang, "");
+      });
+    }
   });
 
   if (state.speechSupported) {
@@ -2714,9 +3179,7 @@ function bindEvents() {
     }, 400);
   }
 
-  // NOTE: We deliberately do NOT stop speech on visibilitychange.
-  // Background playback is desired. Some browsers may still throttle
-  // hidden tabs — that is browser policy, not something JS can change.
+  // Background playback: we do NOT stop speech on visibilitychange.
 
   document.addEventListener("keydown", (event) => {
     const target = event.target;
@@ -2733,8 +3196,7 @@ function bindEvents() {
     }
   });
 
-  // Keep the "current story" highlight in sync while playback advances.
-  // (Cheap poll; the speech API has no cross-browser event we can rely on.)
+  // Keep the current-story highlight in sync while playback advances.
   setInterval(() => {
     if (speech.en.state !== "idle" || speech.ar.state !== "idle") {
       highlightCurrentStory();
@@ -2743,7 +3205,7 @@ function bindEvents() {
 }
 
 /* ============================================================================
- * 14. INITIALISATION
+ * 16. INITIALISATION
  * ========================================================================== */
 function detectFileProtocol() {
   const warning = document.getElementById("fileWarning");
